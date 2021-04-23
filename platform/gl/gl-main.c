@@ -344,6 +344,12 @@ static void load_history(void)
 			js_pop(J, 1);
 		}
 
+		if (js_hasproperty(J, -1, "font_size"))
+		{
+			layout_em = (float)js_tryinteger(J, -1, 1);
+			js_pop(J, 1);
+		}
+
 		if (js_hasproperty(J, -1, "history"))
 		{
 			if (js_isarray(J, -1))
@@ -419,6 +425,9 @@ static void save_history(void)
 		push_location(J, currentpage);
 		js_setproperty(J, -2, "current");
 
+		js_pushnumber(J, (int)layout_em);
+		js_setproperty(J, -2, "font_size");
+		
 		js_newarray(J);
 		for (i = 0; i < history_count; ++i)
 		{
@@ -1547,14 +1556,14 @@ static void load_document(void)
 		}
 	}
 
+	load_history();
+	
 	fz_layout_document(ctx, doc, layout_w, layout_h, layout_em);
 
 	fz_try(ctx)
 		outline = fz_load_outline(ctx, doc);
 	fz_catch(ctx)
 		outline = NULL;
-
-	load_history();
 
 	pdf = pdf_specifics(ctx, doc);
 	if (pdf)
